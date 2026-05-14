@@ -12,7 +12,7 @@ const LISTING_FIELDS = [
   'StreetNumber', 'StreetDirPrefix', 'StreetName', 'StreetSuffix',
   'City', 'PostalCode', 'CountyOrParish', 'StateOrProvince',
   'BedroomsTotal', 'BathroomsTotalInteger', 'BathroomsFull', 'BathroomsHalf',
-  'LivingArea', 'YearBuilt',
+  'BuildingAreaTotal', 'AboveGradeFinishedArea', 'YearBuilt',
   'PropertyType', 'PropertySubType',
   'PublicRemarks',
   'AssociationFee', 'AssociationFeeFrequency',
@@ -48,7 +48,7 @@ export class SparkConnector extends BaseConnector {
 
       const filter = [
         "PropertyType eq 'Residential'",
-        "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract')",
+        "(StandardStatus eq 'Active' or StandardStatus eq 'Active Under Contract')",
       ].join(' and ');
 
       const allListings: ConnectorRawListing[] = [];
@@ -198,7 +198,7 @@ export class SparkConnector extends BaseConnector {
       county: raw.CountyOrParish ? String(raw.CountyOrParish) : undefined,
       listPrice: Number(raw.ListPrice) || 0,
       originalListPrice: Number(raw.OriginalListPrice) || undefined,
-      sqft: Number(raw.LivingArea) || undefined,
+      sqft: Number(raw.BuildingAreaTotal) || Number(raw.AboveGradeFinishedArea) || undefined,
       bedrooms: Number(raw.BedroomsTotal) || 0,
       bathrooms,
       yearBuilt: Number(raw.YearBuilt) || undefined,
