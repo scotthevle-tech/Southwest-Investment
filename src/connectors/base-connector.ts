@@ -1,23 +1,21 @@
-/**
- * Base MLS Connector
- * Abstract class for all MLS data sources
- * Handles authentication, error handling, pagination framework
- */
-
 import { ConnectorRawListing } from '../types';
 
 export interface ConnectorConfig {
-  baseURL: string;
-  apiKey: string;
-  savedSearchId: string;
   market: 'Las Vegas' | 'St. George' | 'Cedar City';
+  baseURL: string;
+  accessToken?: string;
+  clientId?: string;
+  clientSecret?: string;
+  feedId?: string;
 }
 
 export interface ConnectorStatus {
   connectorName: string;
+  market: string;
   isHealthy: boolean;
   lastCheckAt: Date;
   lastError?: string;
+  listingsFetched?: number;
 }
 
 export abstract class BaseConnector {
@@ -28,21 +26,14 @@ export abstract class BaseConnector {
     this.config = config;
     this.lastStatus = {
       connectorName: this.constructor.name,
+      market: config.market,
       isHealthy: true,
       lastCheckAt: new Date(),
     };
   }
 
-  /**
-   * Fetch new listings from MLS
-   * Should be implemented by subclasses
-   */
   abstract fetchNewListings(): Promise<ConnectorRawListing[]>;
 
-  /**
-   * Fetch price + status delta for all active listings (fast check)
-   * Should be implemented by subclasses
-   */
   abstract fetchDeltaCheck(): Promise<
     Array<{
       mlsNumber: string;
@@ -52,29 +43,18 @@ export abstract class BaseConnector {
     }>
   >;
 
-  /**
-   * Get connector health status
-   */
   getStatus(): ConnectorStatus {
     return this.lastStatus;
   }
 
-  /**
-   * Update status
-   */
-  protected updateStatus(isHealthy: boolean, error?: string): void {
+  protected updateStatus(isHealthy: boolean, error?: string, listingsFetched?: number): void {
     this.lastStatus = {
       connectorName: this.constructor.name,
+      market: this.config.market,
       isHealthy,
       lastCheckAt: new Date(),
       lastError: error,
+      listingsFetched,
     };
-  }
-
-  /**
-   * Validate config
-   */
-  protected validateConfig(): boolean {
-    return !!(this.config.baseURL && this.config.apiKey && this.config.savedSearchId);
   }
 }

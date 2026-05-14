@@ -137,9 +137,9 @@ export class ReportScheduler {
         highVelocityProperties: [],
         evaluateProperties: [],
         connectorStatus: [
-          { market: 'Las Vegas (MLXchange)', status: 'healthy' },
-          { market: 'St. George (Flex)', status: 'healthy' },
-          { market: 'Cedar City (Flex Iron)', status: 'pending' },
+          { market: 'Las Vegas (Trestle)', status: 'healthy' },
+          { market: 'St. George (Spark)', status: 'healthy' },
+          { market: 'Cedar City (Spark)', status: 'healthy' },
         ],
       };
 

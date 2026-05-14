@@ -1,7 +1,5 @@
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
-import { MLXchangeConnector } from './connectors/mlxchange-connector';
-import { FlexConnector } from './connectors/flex-connector';
 import { validateConfig, logConfiguration, ValidatedConfig } from './utils/config';
 
 dotenv.config();
