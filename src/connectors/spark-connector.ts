@@ -188,6 +188,8 @@ export class SparkConnector extends BaseConnector {
     }
 
     const subType = String(raw.PropertySubType || '').toLowerCase();
+    const isMobile = subType.includes('manufact') || subType.includes('mobile') || subType.includes('modular');
+    if (isMobile) return null;
     const isSFR = subType.includes('single') || subType.includes('detach') || subType === '';
 
     return {

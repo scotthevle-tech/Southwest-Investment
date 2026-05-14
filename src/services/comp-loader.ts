@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
-import { RENOVATION_KEYWORDS } from '../config/markets';
+import { RENOVATION_KEYWORDS, HARD_FILTERS } from '../config/markets';
 
 const SPARK_BASE_URL = 'https://replication.sparkapi.com/Version/3/Reso/OData';
 const PAGE_SIZE = 200;
@@ -94,8 +94,14 @@ export class CompLoaderService {
           .filter(Boolean).join(' ');
 
         const subType = String(raw.PropertySubType || '').toLowerCase();
+        const isMobile = subType.includes('manufact') || subType.includes('mobile') || subType.includes('modular');
+        if (isMobile) continue;
         const isSFR = subType.includes('single') || subType.includes('detach') || subType === '';
         if (!isSFR) continue;
+
+        const remarksCheck = String(raw.PublicRemarks || '').toLowerCase();
+        const isMobileRemarks = HARD_FILTERS.MOBILE_MANUFACTURED_REJECT.some(kw => remarksCheck.includes(kw));
+        if (isMobileRemarks) continue;
 
         const remarks = String(raw.PublicRemarks || '').toLowerCase();
         const matchedKeywords = RENOVATION_KEYWORDS.filter(kw => remarks.includes(kw));

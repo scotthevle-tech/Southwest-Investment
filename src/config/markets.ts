@@ -14,6 +14,9 @@ export const HARD_FILTERS = {
   MAX_HOA_MONTHLY: 100,
   MIN_BEDROOMS: 2,
   PROPERTY_TYPE: 'SFR',
+  MOBILE_MANUFACTURED_REJECT: ['mobile home', 'manufactured home', 'mobile/manufactured',
+    'manufactured/mobile', 'doublewide', 'double wide', 'singlewide', 'single wide',
+    'modular home', 'trailer'],
   WATER_SOURCE_REJECT: ['well', 'private well', 'spring', 'cistern', 'hauled'],
   STATUS: 'Active',
 } as const;

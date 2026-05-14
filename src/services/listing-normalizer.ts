@@ -69,9 +69,15 @@ export class ListingNormalizerService {
       }
     }
 
-    // Hard filter: Age-restricted communities (keyword backup)
+    // Hard filter: Mobile/manufactured homes
     if (rawListing.remarks) {
       const remarksLower = rawListing.remarks.toLowerCase();
+      const isMobile = HARD_FILTERS.MOBILE_MANUFACTURED_REJECT.some(kw => remarksLower.includes(kw));
+      if (isMobile) {
+        failures.push('Mobile/manufactured home detected in remarks');
+      }
+
+      // Hard filter: Age-restricted communities (keyword backup)
       const ageRestricted = ['55+', '55 and over', '55 & over', 'age restricted',
         'age-restricted', 'senior community', 'adult community', 'active adult'].some(kw => remarksLower.includes(kw));
       if (ageRestricted) {
