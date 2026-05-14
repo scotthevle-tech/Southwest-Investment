@@ -134,12 +134,14 @@ export interface FlipVelocityResult {
   breakdown: {
     opportunityScore: number;
     zipAbsorptionScore: number;
+    spreadScore: number;
     renoScopeScore: number;
     buyerPoolScore: number;
   };
   weights: {
     opportunity: number;
     zipAbsorption: number;
+    spread: number;
     renoScope: number;
     buyerPool: number;
   };

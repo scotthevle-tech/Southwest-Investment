@@ -105,10 +105,20 @@ export const DEAL_ANALYSIS = {
 } as const;
 
 export const FLIP_VELOCITY_WEIGHTS = {
-  OPPORTUNITY: 0.4,
-  ZIP_ABSORPTION: 0.3,
-  RENO_SCOPE: 0.2,
-  BUYER_POOL: 0.1,
+  OPPORTUNITY: 0.25,
+  ZIP_ABSORPTION: 0.25,
+  SPREAD: 0.25,
+  RENO_SCOPE: 0.15,
+  BUYER_POOL: 0.10,
+} as const;
+
+export const SPREAD_SCORE_THRESHOLDS = {
+  EXCELLENT: { minPct: 30, score: 100 },
+  STRONG: { minPct: 20, score: 85 },
+  GOOD: { minPct: 15, score: 70 },
+  MARGINAL: { minPct: 10, score: 50 },
+  THIN: { minPct: 5, score: 30 },
+  BREAK_EVEN: { minPct: 0, score: 10 },
 } as const;
 
 export const FLIP_VELOCITY_THRESHOLDS = {

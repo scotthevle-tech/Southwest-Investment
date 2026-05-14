@@ -96,7 +96,7 @@ async function runTier1() {
   for (const l of highVelocity) {
     console.log(`  SCORE ${l.flipVelocityScore} | MLS# ${l.mlsNumber} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
     console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | Year ${l.yearBuilt || '?'}`);
-    console.log(`    Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Reno: ${l.renoScopeScore} (${l.renoRiskLevel}) | Buyer: ${l.buyerPoolScore}`);
+    console.log(`    Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Spread: ${l.spreadToARVPct || 0}% | Reno: ${l.renoScopeScore} (${l.renoRiskLevel}) | Buyer: ${l.buyerPoolScore}`);
     if (l.modelARV) console.log(`    ARV: $${l.modelARV.toLocaleString()} (${l.modelARVConfidenceDetail})`);
     if (l.maxOffer) console.log(`    List: $${l.listPrice.toLocaleString()} | ARV: $${(l.modelARV || 0).toLocaleString()} | Max Offer: $${l.maxOffer.toLocaleString()} | Est Rehab: $${(l.estimatedRehab || 0).toLocaleString()}`);
     if (l.potentialProfit !== null) console.log(`    Potential Profit: $${(l.potentialProfit || 0).toLocaleString()} | Spread: ${l.spreadToARVPct || 0}%`);

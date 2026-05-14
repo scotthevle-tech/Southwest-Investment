@@ -197,14 +197,6 @@ export class PipelineOrchestratorService {
           // Score: Competitive Inventory
           const competitiveResult = await this.competitiveInventoryScorer.calculate(listing, arvResult.modelARV, 5); // TODO: Implement real query
 
-          // Score: Flip Velocity
-          const flipVelocityResult = this.flipVelocityScorer.calculate(
-            oppResult.opportunityScore,
-            zipAbsorptionResult.zipAbsorptionScore,
-            renoResult.renoScopeScore,
-            buyerPoolResult.buyerPoolScore,
-          );
-
           // Deal analysis: rehab estimate, max offer, potential profit
           let estimatedRehab: number | null = null;
           let maxOffer: number | null = null;
@@ -220,6 +212,20 @@ export class PipelineOrchestratorService {
             potentialProfit = Math.round(arvResult.modelARV - listing.listPrice - estimatedRehab - closingCosts - holdingCosts);
             spreadToARVPct = Math.round(((arvResult.modelARV - listing.listPrice) / listing.listPrice) * 100 * 10) / 10;
           }
+
+          // Exclude negative spreads — ARV below list price means no flip opportunity
+          if (spreadToARVPct !== null && spreadToARVPct < 0) {
+            continue;
+          }
+
+          // Score: Flip Velocity (spread weighted at 25%)
+          const flipVelocityResult = this.flipVelocityScorer.calculate(
+            oppResult.opportunityScore,
+            zipAbsorptionResult.zipAbsorptionScore,
+            renoResult.renoScopeScore,
+            buyerPoolResult.buyerPoolScore,
+            spreadToARVPct,
+          );
 
           // Build scoring object
           const scoredListing = {
