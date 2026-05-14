@@ -21,6 +21,7 @@ export interface AlertItem {
 }
 
 export interface PropertyRow {
+  mlsNumber: string;
   address: string;
   market: string;
   flipVelocityScore: number;
@@ -465,6 +466,7 @@ export class EmailTemplateService {
                 <table>
                     <thead>
                         <tr>
+                            <th>MLS #</th>
                             <th>Address</th>
                             <th>Market</th>
                             <th>Score</th>
@@ -476,6 +478,7 @@ export class EmailTemplateService {
                     <tbody>
                         ${highVelocityProperties.map(prop => `
                         <tr>
+                            <td style="font-family: monospace; font-size: 13px;">${prop.mlsNumber}</td>
                             <td><strong>${prop.address}</strong></td>
                             <td>${prop.market}</td>
                             <td><span class="score-badge score-high">${prop.flipVelocityScore}</span></td>
@@ -501,6 +504,7 @@ export class EmailTemplateService {
                 <table>
                     <thead>
                         <tr>
+                            <th>MLS #</th>
                             <th>Address</th>
                             <th>Market</th>
                             <th>Score</th>
@@ -512,6 +516,7 @@ export class EmailTemplateService {
                     <tbody>
                         ${evaluateProperties.map(prop => `
                         <tr>
+                            <td style="font-family: monospace; font-size: 13px;">${prop.mlsNumber}</td>
                             <td><strong>${prop.address}</strong></td>
                             <td>${prop.market}</td>
                             <td><span class="score-badge score-evaluate">${prop.flipVelocityScore}</span></td>
@@ -627,6 +632,7 @@ export class EmailTemplateService {
       lines.push('───────────────────────────────────────────────────────────────');
       data.highVelocityProperties.forEach(prop => {
         lines.push(`  ${prop.address}`);
+        lines.push(`    MLS #:        ${prop.mlsNumber}`);
         lines.push(`    Market:       ${prop.market}`);
         lines.push(`    Score:        ${prop.flipVelocityScore} (${prop.flipVelocityLevel})`);
         lines.push(`    ARV:          ${prop.arv}`);
@@ -642,6 +648,7 @@ export class EmailTemplateService {
       lines.push('───────────────────────────────────────────────────────────────');
       data.evaluateProperties.forEach(prop => {
         lines.push(`  ${prop.address}`);
+        lines.push(`    MLS #:        ${prop.mlsNumber}`);
         lines.push(`    Market:       ${prop.market}`);
         lines.push(`    Score:        ${prop.flipVelocityScore} (${prop.flipVelocityLevel})`);
         lines.push(`    ARV:          ${prop.arv}`);

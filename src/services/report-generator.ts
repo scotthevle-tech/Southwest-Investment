@@ -182,9 +182,10 @@ ${this.generateConnectorStatusText(report.connectorStatus)}
     if (newEntrants.length > 0) {
       html += '<h3>🆕 New to High Velocity (70+)</h3>';
       html += '<table>';
-      html += '<tr><th>Address</th><th>Market</th><th>Score</th><th>Price</th><th>DOM</th></tr>';
+      html += '<tr><th>MLS #</th><th>Address</th><th>Market</th><th>Score</th><th>Price</th><th>DOM</th></tr>';
       for (const trend of newEntrants) {
         html += `<tr>`;
+        html += `<td style="font-family: monospace; font-size: 13px;">${trend.mlsNumber || ''}</td>`;
         html += `<td>${trend.address}</td>`;
         html += `<td>${trend.market}</td>`;
         html += `<td class="score-high">${trend.today.score}</td>`;
@@ -400,7 +401,7 @@ ${'-'.repeat(100)}
     }
 
     let html = '<table><tr>';
-    html += '<th>Address</th><th>Market</th><th>Price</th><th>Flip Velocity</th><th>Trend</th><th>DOM</th><th>ARV</th>';
+    html += '<th>MLS #</th><th>Address</th><th>Market</th><th>Price</th><th>Flip Velocity</th><th>Trend</th><th>DOM</th><th>ARV</th>';
     html += '</tr>';
 
     // Create lookup for trends
@@ -431,6 +432,7 @@ ${'-'.repeat(100)}
       }
 
       html += `<tr>`;
+      html += `<td style="font-family: monospace; font-size: 13px;">${listing.mlsNumber}</td>`;
       html += `<td>${listing.address}${listing.zipCode ? ` (${listing.zipCode})` : ''}${badges}</td>`;
       html += `<td>${listing.market}</td>`;
       html += `<td>$${listing.listPrice.toLocaleString()}</td>`;
@@ -460,6 +462,7 @@ ${'-'.repeat(100)}
       const badges = (trend?.isNewToList ? '[NEW] ' : '') + (trend?.appearanceCount! >= 3 ? '[3+ DAYS] ' : '');
 
       text += `\n${listing.address} ${badges}\n`;
+      text += `  MLS #: ${listing.mlsNumber}\n`;
       text += `  Market: ${listing.market}\n`;
       text += `  Price: $${listing.listPrice.toLocaleString()}\n`;
       text += `  Flip Velocity Score: ${listing.flipVelocityScore} ${trendIcon}\n`;
@@ -479,12 +482,13 @@ ${'-'.repeat(100)}
     }
 
     let html = '<table><tr>';
-    html += '<th>Address</th><th>Old Price</th><th>New Price</th><th>Drop %</th><th>Score Impact</th>';
+    html += '<th>MLS #</th><th>Address</th><th>Old Price</th><th>New Price</th><th>Drop %</th><th>Score Impact</th>';
     html += '</tr>';
 
     for (const alert of alerts) {
       const dropPct = alert.dropPct.toFixed(1);
       html += `<tr>`;
+      html += `<td style="font-family: monospace; font-size: 13px;">${alert.listing.mlsNumber}</td>`;
       html += `<td>${alert.listing.address}</td>`;
       html += `<td>$${alert.previousPrice.toLocaleString()}</td>`;
       html += `<td>$${alert.newPrice.toLocaleString()}</td>`;
@@ -505,6 +509,7 @@ ${'-'.repeat(100)}
     let text = '';
     for (const alert of alerts) {
       text += `\n${alert.listing.address}\n`;
+      text += `  MLS #: ${alert.listing.mlsNumber}\n`;
       text += `  Old: $${alert.previousPrice.toLocaleString()} → New: $${alert.newPrice.toLocaleString()}\n`;
       text += `  Drop: ${alert.dropPct.toFixed(1)}%\n`;
     }
@@ -518,7 +523,7 @@ ${'-'.repeat(100)}
 
     let html = '<ul>';
     for (const listing of listings) {
-      html += `<li><strong>${listing.address}</strong> - ${listing.dom} DOM (${listing.market})</li>`;
+      html += `<li><strong>${listing.address}</strong> — MLS# ${listing.mlsNumber} — ${listing.dom} DOM (${listing.market})</li>`;
     }
     html += '</ul>';
     return html;
@@ -531,7 +536,7 @@ ${'-'.repeat(100)}
 
     let text = '';
     for (const listing of listings) {
-      text += `${listing.address} - ${listing.dom} DOM (${listing.market})\n`;
+      text += `${listing.address} — MLS# ${listing.mlsNumber} — ${listing.dom} DOM (${listing.market})\n`;
     }
     return text;
   }

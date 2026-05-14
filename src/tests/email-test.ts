@@ -77,6 +77,7 @@ async function runEmailTest(): Promise<void> {
       ],
       highVelocityProperties: [
         {
+          mlsNumber: '2345678',
           address: '1234 Peaceful St',
           market: 'Las Vegas',
           flipVelocityScore: 78,
@@ -86,6 +87,7 @@ async function runEmailTest(): Promise<void> {
           renoScope: 'LOW',
         },
         {
+          mlsNumber: '3456789',
           address: '456 Dream Lane',
           market: 'St. George',
           flipVelocityScore: 72,
@@ -97,6 +99,7 @@ async function runEmailTest(): Promise<void> {
       ],
       evaluateProperties: [
         {
+          mlsNumber: '4567890',
           address: '789 Market Ave',
           market: 'Las Vegas',
           flipVelocityScore: 64,
@@ -106,6 +109,7 @@ async function runEmailTest(): Promise<void> {
           renoScope: 'MEDIUM',
         },
         {
+          mlsNumber: '5678901',
           address: '999 Equity Blvd',
           market: 'Cedar City',
           flipVelocityScore: 58,
@@ -115,6 +119,7 @@ async function runEmailTest(): Promise<void> {
           renoScope: 'HIGH',
         },
         {
+          mlsNumber: '6789012',
           address: '321 Modern Home',
           market: 'Las Vegas',
           flipVelocityScore: 52,
@@ -124,6 +129,7 @@ async function runEmailTest(): Promise<void> {
           renoScope: 'MEDIUM',
         },
         {
+          mlsNumber: '7890123',
           address: '654 Opportunity Way',
           market: 'St. George',
           flipVelocityScore: 48,

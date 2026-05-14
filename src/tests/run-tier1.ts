@@ -94,7 +94,7 @@ async function runTier1() {
 
   console.log(`HIGH VELOCITY (70+): ${highVelocity.length} properties\n`);
   for (const l of highVelocity) {
-    console.log(`  SCORE ${l.flipVelocityScore} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
+    console.log(`  SCORE ${l.flipVelocityScore} | MLS# ${l.mlsNumber} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
     console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | Year ${l.yearBuilt || '?'}`);
     console.log(`    Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Reno: ${l.renoScopeScore} (${l.renoRiskLevel}) | Buyer: ${l.buyerPoolScore}`);
     if (l.modelARV) console.log(`    ARV: $${l.modelARV.toLocaleString()} (${l.modelARVConfidenceDetail})`);
@@ -104,7 +104,7 @@ async function runTier1() {
 
   console.log(`EVALUATE (40-69): Top ${Math.min(evaluate.length, 15)} of ${evaluate.length}\n`);
   for (const l of evaluate.slice(0, 15)) {
-    console.log(`  SCORE ${l.flipVelocityScore} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
+    console.log(`  SCORE ${l.flipVelocityScore} | MLS# ${l.mlsNumber} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
     console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Reno: ${l.renoScopeScore} | Buyer: ${l.buyerPoolScore} | ARV: $${l.modelARV?.toLocaleString() || '0'}`);
   }
 
