@@ -62,6 +62,32 @@ export class ARVEstimatorService {
   }
 
   /**
+   * Remove $/SF outliers using standard deviation
+   * Comps outside ±N standard deviations from the mean are rejected
+   * If only 2-3 comps remain, skip filtering to avoid over-pruning
+   */
+  private removeOutliersByStdDev(comps: Comp[], sdThreshold: number): Comp[] {
+    if (comps.length <= 3) return comps;
+
+    const psfValues = comps.map(c => c.soldPrice / c.sqft);
+    const mean = psfValues.reduce((sum, v) => sum + v, 0) / psfValues.length;
+    const variance = psfValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / psfValues.length;
+    const stdDev = Math.sqrt(variance);
+
+    if (stdDev === 0) return comps;
+
+    const lowerBound = mean - sdThreshold * stdDev;
+    const upperBound = mean + sdThreshold * stdDev;
+
+    const filtered = comps.filter(c => {
+      const psf = c.soldPrice / c.sqft;
+      return psf >= lowerBound && psf <= upperBound;
+    });
+
+    return filtered.length >= 2 ? filtered : comps;
+  }
+
+  /**
    * Calculate similarity weight: comps closer in size/features get higher weight
    * Boosts comps with matching garage count and similar lot size
    */
@@ -121,7 +147,7 @@ export class ARVEstimatorService {
       };
     }
 
-    // Reject comps with bad sqft data or extreme outlier $/SF
+    // Reject comps with bad sqft data
     const validComps = comps.filter(c => c.sqft >= 400);
     if (validComps.length === 0) {
       return {
@@ -134,11 +160,9 @@ export class ARVEstimatorService {
       };
     }
 
-    // Remove $/SF outliers: reject comps > 3x the median $/SF
-    const psfValues = validComps.map(c => c.soldPrice / c.sqft).sort((a, b) => a - b);
-    const medianPSF = psfValues[Math.floor(psfValues.length / 2)];
-    const maxPSF = medianPSF * 3;
-    const cleanComps = validComps.filter(c => (c.soldPrice / c.sqft) <= maxPSF);
+    // Standard deviation outlier rejection on $/SF
+    // Remove comps outside ±1.5 SD from mean — keeps like-kind pricing
+    const cleanComps = this.removeOutliersByStdDev(validComps, 1.5);
 
     if (cleanComps.length === 0) {
       return {
@@ -147,12 +171,11 @@ export class ARVEstimatorService {
         compsUsedCount: 0,
         renovatedCompsCount: 0,
         avgPSFUsed: 0,
-        details: 'No valid comps after outlier removal',
+        details: `No valid comps after SD outlier removal (${validComps.length} rejected)`,
       };
     }
 
     // Classify comps as renovated or general
-    // (use cleanComps from here on)
     const renovatedComps = cleanComps.filter(c => this.isRenovatedComp(c.remarks));
     const generalComps = cleanComps.filter(c => !this.isRenovatedComp(c.remarks));
 
@@ -197,13 +220,16 @@ export class ARVEstimatorService {
     const weightedPSF = totalWeightedPSF / totalWeight;
     const modelARV = Math.round(weightedPSF * listing.sqft);
 
+    const outliersRemoved = validComps.length - cleanComps.length;
+    const outlierNote = outliersRemoved > 0 ? `, ${outliersRemoved} outliers removed by SD` : '';
+
     return {
       modelARV,
       confidenceLevel,
       compsUsedCount: compsToUse.length,
       renovatedCompsCount: renovatedComps.length,
       avgPSFUsed: Math.round(weightedPSF),
-      details: `${compsToUse.length} comps (${renovatedComps.length} renovated) @ $${Math.round(weightedPSF)}/sf`,
+      details: `${compsToUse.length} comps (${renovatedComps.length} renovated) @ $${Math.round(weightedPSF)}/sf${outlierNote}`,
     };
   }
 }
