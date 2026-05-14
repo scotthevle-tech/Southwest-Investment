@@ -17,6 +17,10 @@ export const HARD_FILTERS = {
   MOBILE_MANUFACTURED_REJECT: ['mobile home', 'manufactured home', 'mobile/manufactured',
     'manufactured/mobile', 'doublewide', 'double wide', 'singlewide', 'single wide',
     'modular home', 'trailer'],
+  NEW_CONSTRUCTION_REJECT: ['new construction', 'new build', 'newly built', 'brand new home',
+    'to be built', 'under construction', 'pre-construction', 'model home',
+    'builder closeout', 'spec home'],
+  MAX_YEAR_BUILT_NEW_CONSTRUCTION: 2, // yearBuilt within this many years of current = new construction
   WATER_SOURCE_REJECT: ['well', 'private well', 'spring', 'cistern', 'hauled'],
   STATUS: 'Active',
 } as const;

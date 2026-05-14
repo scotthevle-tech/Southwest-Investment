@@ -69,7 +69,13 @@ export class ListingNormalizerService {
       }
     }
 
-    // Hard filter: Mobile/manufactured homes
+    // Hard filter: New construction
+    const currentYear = new Date().getFullYear();
+    if (rawListing.yearBuilt && rawListing.yearBuilt >= currentYear - HARD_FILTERS.MAX_YEAR_BUILT_NEW_CONSTRUCTION) {
+      failures.push(`New construction (year built ${rawListing.yearBuilt})`);
+    }
+
+    // Hard filter: Mobile/manufactured homes + new construction + age-restricted (remarks scan)
     if (rawListing.remarks) {
       const remarksLower = rawListing.remarks.toLowerCase();
       const isMobile = HARD_FILTERS.MOBILE_MANUFACTURED_REJECT.some(kw => remarksLower.includes(kw));
@@ -77,7 +83,11 @@ export class ListingNormalizerService {
         failures.push('Mobile/manufactured home detected in remarks');
       }
 
-      // Hard filter: Age-restricted communities (keyword backup)
+      const isNewConstruction = HARD_FILTERS.NEW_CONSTRUCTION_REJECT.some(kw => remarksLower.includes(kw));
+      if (isNewConstruction) {
+        failures.push('New construction detected in remarks');
+      }
+
       const ageRestricted = ['55+', '55 and over', '55 & over', 'age restricted',
         'age-restricted', 'senior community', 'adult community', 'active adult'].some(kw => remarksLower.includes(kw));
       if (ageRestricted) {

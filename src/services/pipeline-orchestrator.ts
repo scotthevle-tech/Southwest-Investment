@@ -375,6 +375,23 @@ export class PipelineOrchestratorService {
             }
           }
 
+          // Back-to-Active detection: Pending/Closed → Active = failed contract
+          const wasOffMarket = ['Pending', 'Active Under Contract', 'Closed'].includes(existing.status);
+          const isNowActive = delta.status === 'Active';
+          if (wasOffMarket && isNowActive) {
+            console.log(`[Tier 2] BACK TO ACTIVE: ${delta.mlsNumber} (was ${existing.status})`);
+            stats.domAlertsCount++;
+            if (!this.isDryRun) {
+              await this.prisma.dOMAlert.create({
+                data: {
+                  listingId: existing.id,
+                  domMilestone: existing.dom || 0,
+                  alertType: 'FAILED_CONTRACT_REACTIVATED',
+                },
+              });
+            }
+          }
+
           // Check for DOM milestone or status change
           if (existing.dom !== delta.dom || existing.status !== delta.status) {
             // Convert database record to Listing type (null becomes undefined for optional fields)
@@ -500,14 +517,55 @@ export class PipelineOrchestratorService {
 
       console.log(`[Tier 3] Found ${watchlist.length} watchlist properties`);
 
-      // For each watchlist property, re-score
-      for (const listing of watchlist) {
+      const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+
+      for (const dbListing of watchlist) {
         try {
-          // TODO: Re-score using Tier 1 logic
+          const listing = this.dbToListing(dbListing);
+
+          const zipBenchmark = await this.prisma.zipBenchmark.findFirst({
+            where: { zipCode: listing.zipCode },
+            orderBy: { recordDate: 'desc' },
+          });
+
+          const comps = await this.prisma.comp.findMany({
+            where: { zipCode: listing.zipCode, soldDate: { gte: sixMonthsAgo } },
+            orderBy: { soldDate: 'desc' },
+            take: 15,
+          });
+
+          const oppResult = await this.opportunityScorer.calculate(listing, zipBenchmark?.avgPSFActive ?? 0, zipBenchmark?.avgDOMActive ?? 0);
+          const arvResult = await this.arvEstimator.calculate(listing, comps as any);
+          const zipAbsorptionResult = await this.zipAbsorptionScorer.calculate(listing, comps.map((c: any) => ({ domAtSale: c.domAtSale || 0 })), zipBenchmark?.medianDOMSold90d ?? 0, zipBenchmark?.salesVelocityPerMo ?? 0);
+          const renoResult = this.renoScopeScorer.calculate(listing);
+          const buyerPoolResult = this.buyerPoolScorer.calculate(arvResult.modelARV, this.market);
+
+          let spreadToARVPct: number | null = null;
+          if (arvResult.modelARV > 0 && listing.sqft) {
+            spreadToARVPct = Math.round(((arvResult.modelARV - listing.listPrice) / listing.listPrice) * 100 * 10) / 10;
+          }
+
+          const flipVelocityResult = this.flipVelocityScorer.calculate(oppResult.opportunityScore, zipAbsorptionResult.zipAbsorptionScore, renoResult.renoScopeScore, buyerPoolResult.buyerPoolScore, spreadToARVPct);
+
+          await this.prisma.listing.update({
+            where: { id: dbListing.id },
+            data: {
+              opportunityScore: oppResult.opportunityScore,
+              zipAbsorptionScore: zipAbsorptionResult.zipAbsorptionScore,
+              renoScopeScore: renoResult.renoScopeScore,
+              buyerPoolScore: buyerPoolResult.buyerPoolScore,
+              modelARV: arvResult.modelARV,
+              spreadToARVPct,
+              flipVelocityScore: flipVelocityResult.flipVelocityScore,
+              flipVelocityLevel: flipVelocityResult.flipVelocityLevel,
+              lastScoredAt: new Date(),
+            },
+          });
+
           stats.updatedListingsCount++;
         } catch (error) {
           stats.errorCount++;
-          console.error(`[Tier 3] Error re-scoring ${listing.mlsNumber}:`, error);
+          console.error(`[Tier 3] Error re-scoring ${dbListing.mlsNumber}:`, error);
         }
       }
 
@@ -518,6 +576,162 @@ export class PipelineOrchestratorService {
     }
 
     return stats;
+  }
+
+  /**
+   * WEEKLY REFRESH: Re-score all active 40+ listings with fresh comp data
+   */
+  async runWeeklyRefresh(): Promise<ProcessingStats> {
+    const stats: ProcessingStats = {
+      newListingsCount: 0,
+      updatedListingsCount: 0,
+      priceAlertsCount: 0,
+      domAlertsCount: 0,
+      errorCount: 0,
+      warnings: [],
+    };
+
+    const startTime = Date.now();
+
+    try {
+      console.log(`[Weekly] Starting weekly refresh for ${this.market}...`);
+
+      const activeListings = await this.prisma.listing.findMany({
+        where: {
+          market: this.market,
+          isActive: true,
+          flipVelocityScore: { gte: 40 },
+        },
+      });
+
+      console.log(`[Weekly] Re-scoring ${activeListings.length} active listings (score >= 40)`);
+
+      const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+
+      for (const dbListing of activeListings) {
+        try {
+          const listing = this.dbToListing(dbListing);
+
+          const zipBenchmark = await this.prisma.zipBenchmark.findFirst({
+            where: { zipCode: listing.zipCode },
+            orderBy: { recordDate: 'desc' },
+          });
+
+          const sqftMin = listing.sqft ? Math.round(listing.sqft * 0.75) : 0;
+          const sqftMax = listing.sqft ? Math.round(listing.sqft * 1.25) : 999999;
+
+          let comps = await this.prisma.comp.findMany({
+            where: {
+              zipCode: listing.zipCode,
+              soldDate: { gte: sixMonthsAgo },
+              sqft: { gte: sqftMin, lte: sqftMax },
+              bedrooms: { gte: listing.bedrooms - 1, lte: listing.bedrooms + 1 },
+            },
+            orderBy: { soldDate: 'desc' },
+            take: 15,
+          });
+
+          if (comps.length < 3) {
+            comps = await this.prisma.comp.findMany({
+              where: { zipCode: listing.zipCode, soldDate: { gte: sixMonthsAgo } },
+              orderBy: { soldDate: 'desc' },
+              take: 10,
+            });
+          }
+
+          const oppResult = await this.opportunityScorer.calculate(listing, zipBenchmark?.avgPSFActive ?? 0, zipBenchmark?.avgDOMActive ?? 0);
+          const arvResult = await this.arvEstimator.calculate(listing, comps as any);
+          const zipAbsorptionResult = await this.zipAbsorptionScorer.calculate(listing, comps.map((c: any) => ({ domAtSale: c.domAtSale || 0 })), zipBenchmark?.medianDOMSold90d ?? 0, zipBenchmark?.salesVelocityPerMo ?? 0);
+          const renoResult = this.renoScopeScorer.calculate(listing);
+          const buyerPoolResult = this.buyerPoolScorer.calculate(arvResult.modelARV, this.market);
+          const competitiveResult = await this.competitiveInventoryScorer.calculate(listing, arvResult.modelARV, 5);
+
+          let estimatedRehab: number | null = null;
+          let maxOffer: number | null = null;
+          let potentialProfit: number | null = null;
+          let spreadToARVPct: number | null = null;
+
+          if (arvResult.modelARV > 0 && listing.sqft) {
+            const costPerSqft = DEAL_ANALYSIS.REHAB_COST_PER_SQFT[renoResult.renoRiskLevel] || DEAL_ANALYSIS.REHAB_COST_PER_SQFT.MEDIUM;
+            estimatedRehab = Math.round(costPerSqft * listing.sqft);
+            maxOffer = Math.round(arvResult.modelARV * DEAL_ANALYSIS.OFFER_RULE_PCT - estimatedRehab);
+            const closingCosts = arvResult.modelARV * (DEAL_ANALYSIS.CLOSING_COST_BUY_PCT + DEAL_ANALYSIS.CLOSING_COST_SELL_PCT);
+            const holdingCosts = DEAL_ANALYSIS.HOLDING_COST_MONTHLY * DEAL_ANALYSIS.HOLDING_MONTHS;
+            potentialProfit = Math.round(arvResult.modelARV - listing.listPrice - estimatedRehab - closingCosts - holdingCosts);
+            spreadToARVPct = Math.round(((arvResult.modelARV - listing.listPrice) / listing.listPrice) * 100 * 10) / 10;
+          }
+
+          const flipVelocityResult = this.flipVelocityScorer.calculate(oppResult.opportunityScore, zipAbsorptionResult.zipAbsorptionScore, renoResult.renoScopeScore, buyerPoolResult.buyerPoolScore, spreadToARVPct);
+
+          await this.prisma.listing.update({
+            where: { id: dbListing.id },
+            data: {
+              opportunityScore: oppResult.opportunityScore,
+              zipAbsorptionScore: zipAbsorptionResult.zipAbsorptionScore,
+              renoScopeScore: renoResult.renoScopeScore,
+              buyerPoolScore: buyerPoolResult.buyerPoolScore,
+              modelARV: arvResult.modelARV,
+              estimatedRehab,
+              maxOffer,
+              potentialProfit,
+              spreadToARVPct,
+              competitiveInventoryCount: competitiveResult.competitiveInventoryCount,
+              competitiveInventoryScore: competitiveResult.competitiveInventoryScore,
+              flipVelocityScore: flipVelocityResult.flipVelocityScore,
+              flipVelocityLevel: flipVelocityResult.flipVelocityLevel,
+              lastScoredAt: new Date(),
+            },
+          });
+
+          stats.updatedListingsCount++;
+        } catch (error) {
+          stats.errorCount++;
+        }
+      }
+
+      console.log(`[Weekly] Complete. Re-scored: ${stats.updatedListingsCount}, Errors: ${stats.errorCount}`);
+    } catch (error) {
+      stats.errorCount++;
+      console.error('[Weekly] Refresh error:', error);
+    }
+
+    const durationMs = Date.now() - startTime;
+
+    if (!this.isDryRun) {
+      await this.prisma.runLog.create({
+        data: {
+          runType: 'WEEKLY_REFRESH',
+          market: this.market,
+          newListingsCount: 0,
+          updatedListingsCount: stats.updatedListingsCount,
+          errorCount: stats.errorCount,
+          warnings: JSON.stringify(stats.warnings),
+          durationMs,
+          connectorStatus: JSON.stringify(this.getConnectorStatus()),
+        },
+      });
+    }
+
+    return stats;
+  }
+
+  private dbToListing(db: any): Listing {
+    return {
+      ...db,
+      market: db.market as 'Las Vegas' | 'St. George' | 'Cedar City',
+      zipCode: db.zipCode ?? undefined,
+      county: db.county ?? undefined,
+      originalListPrice: db.originalListPrice ?? undefined,
+      sqft: db.sqft ?? undefined,
+      garageSpaces: db.garageSpaces ?? undefined,
+      lotSqft: db.lotSqft ?? undefined,
+      yearBuilt: db.yearBuilt ?? undefined,
+      remarks: db.remarks ?? undefined,
+      hoaMonthly: db.hoaMonthly ?? undefined,
+      waterSource: db.waterSource ?? undefined,
+      sewerType: db.sewerType ?? undefined,
+      dom: db.dom ?? undefined,
+    };
   }
 
   /**

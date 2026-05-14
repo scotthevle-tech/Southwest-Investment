@@ -75,6 +75,11 @@ async function runTier1() {
   });
   const sgStats = await sgPipeline.runTier1NewListings();
 
+  // STEP 4: Build active listing benchmarks from scored data
+  console.log('\nSTEP 4: Building active listing benchmarks...\n');
+  await compLoader.buildActiveBenchmarks('Cedar City');
+  await compLoader.buildActiveBenchmarks('St. George');
+
   // RESULTS
   console.log('\n═══════════════════════════════════════════════════');
   console.log('  RESULTS');

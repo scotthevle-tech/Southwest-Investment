@@ -32,6 +32,25 @@ export class CompLoaderService {
     this.prisma = prisma;
   }
 
+  private normalizeAddress(address: string): string {
+    return address.toLowerCase().trim()
+      .replace(/\b(north|n\.?)\b/gi, 'n')
+      .replace(/\b(south|s\.?)\b/gi, 's')
+      .replace(/\b(east|e\.?)\b/gi, 'e')
+      .replace(/\b(west|w\.?)\b/gi, 'w')
+      .replace(/\b(drive|dr\.?)\b/gi, 'dr')
+      .replace(/\b(street|st\.?)\b/gi, 'st')
+      .replace(/\b(avenue|ave\.?)\b/gi, 'ave')
+      .replace(/\b(boulevard|blvd\.?)\b/gi, 'blvd')
+      .replace(/\b(circle|cir\.?)\b/gi, 'cir')
+      .replace(/\b(court|ct\.?)\b/gi, 'ct')
+      .replace(/\b(lane|ln\.?)\b/gi, 'ln')
+      .replace(/\b(place|pl\.?)\b/gi, 'pl')
+      .replace(/\b(road|rd\.?)\b/gi, 'rd')
+      .replace(/\b(way|wy\.?)\b/gi, 'way')
+      .replace(/\s+/g, ' ');
+  }
+
   async loadCompsFromSpark(config: SparkCompConfig): Promise<number> {
     const daysBack = config.daysBack || 180;
     const sinceDate = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
@@ -82,6 +101,9 @@ export class CompLoaderService {
     console.log(`[CompLoader-${config.market}] Fetched ${allComps.length} sold comps (${page} pages)`);
 
     let loaded = 0;
+    let dupes = 0;
+    const seenAddresses = new Set<string>();
+
     for (const raw of allComps) {
       try {
         const mlsNumber = raw.ListingKey || raw.ListingId;
@@ -93,6 +115,10 @@ export class CompLoaderService {
         const streetParts = [raw.StreetNumber, raw.StreetDirPrefix, raw.StreetName, raw.StreetSuffix]
           .filter(Boolean).join(' ');
 
+        const dedupKey = `${this.normalizeAddress(streetParts)}-${raw.ClosePrice}-${sqft}`;
+        if (seenAddresses.has(dedupKey)) { dupes++; continue; }
+        seenAddresses.add(dedupKey);
+
         const subType = String(raw.PropertySubType || '').toLowerCase();
         const isMobile = subType.includes('manufact') || subType.includes('mobile') || subType.includes('modular');
         if (isMobile) continue;
@@ -102,6 +128,8 @@ export class CompLoaderService {
         const remarksCheck = String(raw.PublicRemarks || '').toLowerCase();
         const isMobileRemarks = HARD_FILTERS.MOBILE_MANUFACTURED_REJECT.some(kw => remarksCheck.includes(kw));
         if (isMobileRemarks) continue;
+        const isNewConstRemarks = HARD_FILTERS.NEW_CONSTRUCTION_REJECT.some(kw => remarksCheck.includes(kw));
+        if (isNewConstRemarks) continue;
 
         const remarks = String(raw.PublicRemarks || '').toLowerCase();
         const matchedKeywords = RENOVATION_KEYWORDS.filter(kw => remarks.includes(kw));
@@ -160,7 +188,7 @@ export class CompLoaderService {
       }
     }
 
-    console.log(`[CompLoader-${config.market}] Loaded ${loaded} SFR comps to database`);
+    console.log(`[CompLoader-${config.market}] Loaded ${loaded} SFR comps to database (${dupes} duplicates skipped)`);
     return loaded;
   }
 
@@ -248,5 +276,51 @@ export class CompLoaderService {
 
     console.log(`[ZipBenchmark-${market}] Created benchmarks for ${created} ZIP codes`);
     return created;
+  }
+
+  async buildActiveBenchmarks(market: string): Promise<number> {
+    console.log(`[ActiveBenchmark-${market}] Building active listing benchmarks...`);
+
+    const activeListings = await this.prisma.listing.findMany({
+      where: { market, isActive: true, sqft: { gt: 0 } },
+      select: { zipCode: true, listPrice: true, sqft: true, dom: true, originalListPrice: true },
+    });
+
+    const byZip = new Map<string, typeof activeListings>();
+    for (const l of activeListings) {
+      if (!l.zipCode) continue;
+      const arr = byZip.get(l.zipCode) || [];
+      arr.push(l);
+      byZip.set(l.zipCode, arr);
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let updated = 0;
+
+    for (const [zipCode, listings] of byZip) {
+      const avgPSFActive = listings.reduce((sum, l) => sum + (l.sqft! > 0 ? l.listPrice / l.sqft! : 0), 0) / listings.length;
+      const avgDOMActive = listings.reduce((sum, l) => sum + (l.dom || 0), 0) / listings.length;
+      const reducedCount = listings.filter(l => l.originalListPrice && l.originalListPrice > l.listPrice).length;
+      const priceReductionRate = listings.length > 0 ? reducedCount / listings.length : 0;
+
+      try {
+        await this.prisma.zipBenchmark.updateMany({
+          where: { zipCode, recordDate: today },
+          data: {
+            activeSFRCount: listings.length,
+            avgPSFActive: Math.round(avgPSFActive * 100) / 100,
+            avgDOMActive: Math.round(avgDOMActive * 100) / 100,
+            priceReductionRate: Math.round(priceReductionRate * 1000) / 1000,
+          },
+        });
+        updated++;
+      } catch (error) {
+        // Skip
+      }
+    }
+
+    console.log(`[ActiveBenchmark-${market}] Updated ${updated} ZIP benchmarks with active data`);
+    return updated;
   }
 }

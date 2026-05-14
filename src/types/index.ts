@@ -126,6 +126,7 @@ export interface ARVEstimationResult {
   renovatedCompsCount: number;
   avgPSFUsed: number;
   details: string;
+  thinMarket?: boolean;
 }
 
 export interface FlipVelocityResult {

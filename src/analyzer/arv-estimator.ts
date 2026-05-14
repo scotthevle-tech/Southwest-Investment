@@ -222,6 +222,8 @@ export class ARVEstimatorService {
 
     const outliersRemoved = validComps.length - cleanComps.length;
     const outlierNote = outliersRemoved > 0 ? `, ${outliersRemoved} outliers removed by SD` : '';
+    const thinMarket = compsToUse.length < 5;
+    const thinNote = thinMarket ? ' [THIN MARKET]' : '';
 
     return {
       modelARV,
@@ -229,7 +231,8 @@ export class ARVEstimatorService {
       compsUsedCount: compsToUse.length,
       renovatedCompsCount: renovatedComps.length,
       avgPSFUsed: Math.round(weightedPSF),
-      details: `${compsToUse.length} comps (${renovatedComps.length} renovated) @ $${Math.round(weightedPSF)}/sf${outlierNote}`,
+      details: `${compsToUse.length} comps (${renovatedComps.length} renovated) @ $${Math.round(weightedPSF)}/sf${outlierNote}${thinNote}`,
+      thinMarket,
     };
   }
 }
