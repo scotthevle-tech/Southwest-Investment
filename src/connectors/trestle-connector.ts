@@ -84,6 +84,7 @@ export class TrestleConnector extends BaseConnector {
       const filter = [
         "PropertyType eq 'Residential'",
         "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract')",
+        "(PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Single Family Residence' or PropertySubType eq 'Detached')",
         "CountyOrParish eq 'Clark'",
       ].join(' and ');
 
@@ -145,6 +146,7 @@ export class TrestleConnector extends BaseConnector {
       const filter = [
         "PropertyType eq 'Residential'",
         "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract' or StandardStatus eq 'Pending')",
+        "(PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Single Family Residence' or PropertySubType eq 'Detached')",
         "CountyOrParish eq 'Clark'",
       ].join(' and ');
 

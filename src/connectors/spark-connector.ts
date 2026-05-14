@@ -49,6 +49,7 @@ export class SparkConnector extends BaseConnector {
       const filter = [
         "PropertyType eq 'Residential'",
         "(StandardStatus eq 'Active' or StandardStatus eq 'Active Under Contract')",
+        "(PropertySubType eq 'Single Family Residence' or PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Detached')",
       ].join(' and ');
 
       const allListings: ConnectorRawListing[] = [];
@@ -107,7 +108,8 @@ export class SparkConnector extends BaseConnector {
 
       const filter = [
         "PropertyType eq 'Residential'",
-        "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract' or StandardStatus eq 'Pending')",
+        "(StandardStatus eq 'Active' or StandardStatus eq 'Active Under Contract' or StandardStatus eq 'Pending')",
+        "(PropertySubType eq 'Single Family Residence' or PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Detached')",
       ].join(' and ');
 
       const results: Array<{ mlsNumber: string; listPrice: number; status: string; dom: number }> = [];
