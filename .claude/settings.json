@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(git -C \"c:\\\\Users\\\\scott\\\\OneDrive\\\\Documents\\\\Coding Files\\\\Claude Projects\\\\NHL Betting Project\\\\nhl-betting-system\" status)",
+      "PowerShell(git init)"
+    ]
+  }
+}
