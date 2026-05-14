@@ -14,7 +14,7 @@
  */
 
 import { Listing, ARVEstimationResult } from '../types';
-import { RENOVATION_KEYWORDS, HARD_FILTERS } from '../config/markets';
+import { RENOVATION_KEYWORDS } from '../config/markets';
 
 interface Comp {
   mlsNumber: string;
@@ -86,9 +86,40 @@ export class ARVEstimatorService {
       };
     }
 
+    // Reject comps with bad sqft data or extreme outlier $/SF
+    const validComps = comps.filter(c => c.sqft >= 400);
+    if (validComps.length === 0) {
+      return {
+        modelARV: 0,
+        confidenceLevel: 'LOW',
+        compsUsedCount: 0,
+        renovatedCompsCount: 0,
+        avgPSFUsed: 0,
+        details: 'No valid comps (all had bad sqft data)',
+      };
+    }
+
+    // Remove $/SF outliers: reject comps > 3x the median $/SF
+    const psfValues = validComps.map(c => c.soldPrice / c.sqft).sort((a, b) => a - b);
+    const medianPSF = psfValues[Math.floor(psfValues.length / 2)];
+    const maxPSF = medianPSF * 3;
+    const cleanComps = validComps.filter(c => (c.soldPrice / c.sqft) <= maxPSF);
+
+    if (cleanComps.length === 0) {
+      return {
+        modelARV: 0,
+        confidenceLevel: 'LOW',
+        compsUsedCount: 0,
+        renovatedCompsCount: 0,
+        avgPSFUsed: 0,
+        details: 'No valid comps after outlier removal',
+      };
+    }
+
     // Classify comps as renovated or general
-    const renovatedComps = comps.filter(c => this.isRenovatedComp(c.remarks));
-    const generalComps = comps.filter(c => !this.isRenovatedComp(c.remarks));
+    // (use cleanComps from here on)
+    const renovatedComps = cleanComps.filter(c => this.isRenovatedComp(c.remarks));
+    const generalComps = cleanComps.filter(c => !this.isRenovatedComp(c.remarks));
 
     // Strategy: Try to use 5+ renovated comps (HIGH-RENOVATED)
     // Fall back to blend if fewer available
@@ -98,18 +129,18 @@ export class ARVEstimatorService {
     if (renovatedComps.length >= 5) {
       compsToUse = renovatedComps.slice(0, this.MAX_COMPS_TO_USE);
       confidenceLevel = 'HIGH-RENOVATED';
-    } else if (renovatedComps.length >= 2 && comps.length >= 3) {
+    } else if (renovatedComps.length >= 2 && cleanComps.length >= 3) {
       // Blend renovated + general
       compsToUse = [...renovatedComps, ...generalComps.slice(0, this.MAX_COMPS_TO_USE - renovatedComps.length)].slice(
         0,
         this.MAX_COMPS_TO_USE,
       );
       confidenceLevel = 'MEDIUM-BLENDED';
-    } else if (comps.length >= 3) {
-      compsToUse = comps.slice(0, this.MAX_COMPS_TO_USE);
+    } else if (cleanComps.length >= 3) {
+      compsToUse = cleanComps.slice(0, this.MAX_COMPS_TO_USE);
       confidenceLevel = renovatedComps.length === 0 ? 'MEDIUM-GENERAL' : 'MEDIUM-BLENDED';
     } else {
-      compsToUse = comps;
+      compsToUse = cleanComps;
       confidenceLevel = 'LOW';
     }
 
@@ -130,11 +161,8 @@ export class ARVEstimatorService {
     const weightedPSF = totalWeightedPSF / totalWeight;
     const modelARV = Math.round(weightedPSF * listing.sqft);
 
-    // Cap at hard maximum
-    const cappedARV = Math.min(modelARV, HARD_FILTERS.MAX_ARV_TARGET);
-
     return {
-      modelARV: cappedARV,
+      modelARV,
       confidenceLevel,
       compsUsedCount: compsToUse.length,
       renovatedCompsCount: renovatedComps.length,

@@ -87,7 +87,7 @@ export class CompLoaderService {
         if (!mlsNumber || !raw.ClosePrice) continue;
 
         const sqft = Number(raw.BuildingAreaTotal) || Number(raw.AboveGradeFinishedArea) || 0;
-        if (sqft === 0) continue;
+        if (sqft < 400) continue;
 
         const streetParts = [raw.StreetNumber, raw.StreetDirPrefix, raw.StreetName, raw.StreetSuffix]
           .filter(Boolean).join(' ');
