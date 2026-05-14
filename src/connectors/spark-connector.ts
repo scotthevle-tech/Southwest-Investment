@@ -11,12 +11,12 @@ const LISTING_FIELDS = [
   'StandardStatus', 'MlsStatus', 'DaysOnMarket',
   'StreetNumber', 'StreetDirPrefix', 'StreetName', 'StreetSuffix',
   'City', 'PostalCode', 'CountyOrParish', 'StateOrProvince',
-  'BedroomsTotal', 'BathroomsTotalInteger', 'BathroomsFull', 'BathroomsHalf',
+  'BedroomsTotal', 'BathroomsTotalInteger', 'BathroomsTotalDecimal',
   'BuildingAreaTotal', 'AboveGradeFinishedArea', 'YearBuilt',
   'PropertyType', 'PropertySubType',
   'PublicRemarks',
   'AssociationFee', 'AssociationFeeFrequency',
-  'WaterSource', 'Sewer',
+  'WaterSource',
   'ListingContractDate', 'OnMarketDate',
 ].join(',');
 
@@ -167,12 +167,7 @@ export class SparkConnector extends BaseConnector {
     const address = streetParts || 'Unknown Address';
     const city = String(raw.City || this.config.market);
 
-    let bathrooms = Number(raw.BathroomsTotalInteger) || 0;
-    if (!bathrooms) {
-      const full = Number(raw.BathroomsFull) || 0;
-      const half = Number(raw.BathroomsHalf) || 0;
-      bathrooms = full + half * 0.5;
-    }
+    let bathrooms = Number(raw.BathroomsTotalInteger) || Number(raw.BathroomsTotalDecimal) || 0;
 
     let hoaMonthly: number | undefined;
     const assocFee = Number(raw.AssociationFee);
@@ -208,7 +203,6 @@ export class SparkConnector extends BaseConnector {
       remarks: raw.PublicRemarks ? String(raw.PublicRemarks) : undefined,
       hoaMonthly,
       waterSource: raw.WaterSource ? String(raw.WaterSource) : undefined,
-      sewerType: raw.Sewer ? String(raw.Sewer) : undefined,
     };
   }
 
