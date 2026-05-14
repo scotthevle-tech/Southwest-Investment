@@ -15,7 +15,7 @@ export const HARD_FILTERS = {
   MAX_HOA_MONTHLY: 100,
   MIN_BEDROOMS: 2,
   PROPERTY_TYPE: 'SFR',
-  WATER_SOURCE: 'Municipal',
+  WATER_SOURCE_REJECT: ['well', 'private well', 'spring', 'cistern', 'hauled'],
   STATUS: 'Active',
 } as const;
 

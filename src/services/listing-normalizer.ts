@@ -49,9 +49,10 @@ export class ListingNormalizerService {
       failures.push(`Property type "${rawListing.propertyType}" not ${HARD_FILTERS.PROPERTY_TYPE}`);
     }
 
-    // Hard filter: Status
-    if (rawListing.status !== HARD_FILTERS.STATUS) {
-      failures.push(`Status "${rawListing.status}" not ${HARD_FILTERS.STATUS}`);
+    // Hard filter: Status (accept Active and Active Under Contract)
+    const validStatuses = ['Active', 'Active Under Contract'];
+    if (!validStatuses.includes(rawListing.status)) {
+      failures.push(`Status "${rawListing.status}" not active`);
     }
 
     // Hard filter: HOA
@@ -59,12 +60,13 @@ export class ListingNormalizerService {
       failures.push(`HOA $${rawListing.hoaMonthly}/mo exceeds $${HARD_FILTERS.MAX_HOA_MONTHLY} max`);
     }
 
-    // Hard filter: Water source
-    if (
-      rawListing.waterSource &&
-      rawListing.waterSource !== HARD_FILTERS.WATER_SOURCE
-    ) {
-      failures.push(`Water source "${rawListing.waterSource}" not ${HARD_FILTERS.WATER_SOURCE}`);
+    // Hard filter: Water source (reject well/private/spring only)
+    if (rawListing.waterSource) {
+      const ws = rawListing.waterSource.toLowerCase();
+      const rejected = HARD_FILTERS.WATER_SOURCE_REJECT.some(r => ws.includes(r));
+      if (rejected) {
+        failures.push(`Water source "${rawListing.waterSource}" is non-municipal`);
+      }
     }
 
     // Warnings (non-blocking)
