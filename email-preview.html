@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southwest Investment - Email Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .preview-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .preview-info {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-bottom: 1px solid #90caf9;
+            font-size: 14px;
+        }
+        .preview-info strong {
+            color: #1976d2;
+        }
+        .email-preview {
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 1200px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-container">
+        <div class="preview-info">
+            <strong>📧 Email Preview:</strong> This is how your daily Southwest Investment report will look in email clients.
+            The email is responsive and works on desktop, tablet, and mobile devices.
+        </div>
+        <div class="email-preview">
+            <iframe srcdoc='
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southwest Investment - Daily Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+            background-color: #f7f9fc;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+            border-bottom: 4px solid #764ba2;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.95;
+            margin: 0;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background-color: #f7f9fc;
+            border-bottom: 1px solid #e0e6f2;
+        }
+        
+        .stat-box {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .stat-box.high-velocity {
+            border-left-color: #10b981;
+        }
+        
+        .stat-box.evaluate {
+            border-left-color: #f59e0b;
+        }
+        
+        .stat-box.alerts {
+            border-left-color: #ef4444;
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        
+        .stat-box.high-velocity .stat-number { color: #10b981; }
+        .stat-box.evaluate .stat-number { color: #f59e0b; }
+        .stat-box.alerts .stat-number { color: #ef4444; }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+        
+        .section {
+            padding: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e6f2;
+        }
+        
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        
+        .section-icon.high {
+            background-color: #10b981;
+        }
+        
+        .section-icon.evaluate {
+            background-color: #f59e0b;
+        }
+        
+        .section-icon.alert {
+            background-color: #ef4444;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        thead {
+            background-color: #f3f4f6;
+            border-bottom: 2px solid #e0e6f2;
+        }
+        
+        th {
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 14px 15px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+        
+        tbody tr:hover {
+            background-color: #fafbfc;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .score-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+            min-width: 50px;
+        }
+        
+        .score-high {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .score-evaluate {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .alert-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .alert-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background-color: #fff7ed;
+            border-left: 4px solid #f59e0b;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .alert-item.price {
+            background-color: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        
+        .alert-address {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+        
+        .alert-detail {
+            color: #6b7280;
+            font-size: 13px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        
+        .status-item {
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #e0e6f2;
+            background-color: #f9fafb;
+        }
+        
+        .status-item.healthy {
+            border-left-color: #10b981;
+            background-color: #ecfdf5;
+        }
+        
+        .status-market {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .status-text {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px 30px;
+            border-top: 1px solid #e0e6f2;
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+        }
+        
+        .footer-divider {
+            height: 1px;
+            background-color: #e0e6f2;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏠 Southwest Investment</h1>
+            <p>Daily Property Flip Analysis Report</p>
+            <p style="font-size: 13px; margin-top: 8px;">Generated: May 8, 2026, 8:00 AM MT</p>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-box high-velocity">
+                <div class="stat-label">High Velocity</div>
+                <div class="stat-number">3</div>
+                <div class="stat-label">Ready to Deep Dive</div>
+            </div>
+            <div class="stat-box evaluate">
+                <div class="stat-label">Evaluate</div>
+                <div class="stat-number">5</div>
+                <div class="stat-label">Worth Reviewing</div>
+            </div>
+            <div class="stat-box alerts">
+                <div class="stat-label">Alerts</div>
+                <div class="stat-number">3</div>
+                <div class="stat-label">Price & DOM Changes</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-icon high">⭐</div>
+                <h2 class="section-title">High Velocity Opportunities</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Market</th>
+                        <th>Score</th>
+                        <th>ARV</th>
+                        <th>List Price</th>
+                        <th>Reno Risk</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>1234 Peaceful St</strong></td>
+                        <td>Las Vegas</td>
+                        <td><span class="score-badge score-high">78</span></td>
+                        <td>$420,135</td>
+                        <td>$285,000</td>
+                        <td><span class="score-badge score-high">LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>456 Dream Lane</strong></td>
+                        <td>St. George</td>
+                        <td><span class="score-badge score-high">72</span></td>
+                        <td>$476,910</td>
+                        <td>$298,500</td>
+                        <td><span class="score-badge score-high">LOW</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>999 Equity Blvd</strong></td>
+                        <td>Las Vegas</td>
+                        <td><span class="score-badge score-high">71</span></td>
+                        <td>$395,420</td>
+                        <td>$275,900</td>
+                        <td><span class="score-badge score-high">LOW</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-icon evaluate">📋</div>
+                <h2 class="section-title">Evaluate Tier</h2>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Address</th>
+                        <th>Market</th>
+                        <th>Score</th>
+                        <th>ARV</th>
+                        <th>List Price</th>
+                        <th>Reno Risk</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>789 Market Ave</strong></td>
+                        <td>Las Vegas</td>
+                        <td><span class="score-badge score-evaluate">64</span></td>
+                        <td>$385,420</td>
+                        <td>$265,000</td>
+                        <td><span class="score-badge score-evaluate">MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>321 Modern Home</strong></td>
+                        <td>Cedar City</td>
+                        <td><span class="score-badge score-evaluate">58</span></td>
+                        <td>$317,940</td>
+                        <td>$198,000</td>
+                        <td><span class="score-badge score-evaluate">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>654 Opportunity</strong></td>
+                        <td>St. George</td>
+                        <td><span class="score-badge score-evaluate">52</span></td>
+                        <td>$421,000</td>
+                        <td>$305,000</td>
+                        <td><span class="score-badge score-evaluate">MEDIUM</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>111 Market St</strong></td>
+                        <td>Las Vegas</td>
+                        <td><span class="score-badge score-evaluate">48</span></td>
+                        <td>$395,000</td>
+                        <td>$289,900</td>
+                        <td><span class="score-badge score-evaluate">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>222 Sunset Blvd</strong></td>
+                        <td>Cedar City</td>
+                        <td><span class="score-badge score-evaluate">45</span></td>
+                        <td>$298,500</td>
+                        <td>$175,000</td>
+                        <td><span class="score-badge score-evaluate">HIGH</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-icon alert">💰</div>
+                <h2 class="section-title">Price Alerts</h2>
+            </div>
+            <ul class="alert-list">
+                <li class="alert-item price">
+                    <div class="alert-address">1234 Peaceful St</div>
+                    <div class="alert-detail">Price dropped $20,000 (4.8%) from $420,000 to $400,000</div>
+                </li>
+                <li class="alert-item price">
+                    <div class="alert-address">456 Dream Lane</div>
+                    <div class="alert-detail">SIGNIFICANT REDUCTION: -$32,500 (7.2%) — now $420,875</div>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-icon alert">📅</div>
+                <h2 class="section-title">Days on Market Milestones</h2>
+            </div>
+            <ul class="alert-list">
+                <li class="alert-item">
+                    <div class="alert-address">789 Market Ave</div>
+                    <div class="alert-detail">Reached 90 days on market — time-sensitive opportunity</div>
+                </li>
+                <li class="alert-item">
+                    <div class="alert-address">999 Equity Blvd</div>
+                    <div class="alert-detail">Reactivated after failed contract — back to Active status</div>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-icon" style="background-color: #6366f1;">⚙️</div>
+                <h2 class="section-title">Data Source Status</h2>
+            </div>
+            <div class="status-grid">
+                <div class="status-item status-healthy">
+                    <div class="status-market">✅ Las Vegas (MLXchange)</div>
+                    <div class="status-text">Healthy · 47 active listings</div>
+                </div>
+                <div class="status-item status-healthy">
+                    <div class="status-market">✅ St. George (Flex)</div>
+                    <div class="status-text">Healthy · 18 active listings</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-market">⏳ Cedar City (Flex Iron)</div>
+                    <div class="status-text">Pending API configuration</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <strong>Southwest Investment Software</strong>
+            <div class="footer-divider"></div>
+            <p>Automated property flip analysis for Southern Utah & Nevada</p>
+            <p style="margin-top: 10px; color: #9ca3af;">Las Vegas • St. George • Cedar City</p>
+            <p style="margin-top: 10px; font-size: 11px; color: #d1d5db;">
+                This is an automated report. Do your own due diligence before making investment decisions.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+            ' ></iframe>
+        </div>
+    </div>
+
+    <p style="text-align: center; margin-top: 30px; color: #666; font-size: 14px;">
+        💾 Save this file as <code>email-preview.html</code> and open in a browser to see the full email template.<br/>
+        📧 This email is fully responsive and works on all devices and email clients.
+    </p>
+</body>
+</html>

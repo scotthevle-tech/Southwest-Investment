@@ -1,0 +1,302 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Listing {
+  id                        String   @id @default(cuid())
+  mlsNumber                 String   @unique
+  market                    String   // "Las Vegas", "St. George", "Cedar City"
+  address                   String
+  city                      String
+  zipCode                   String?
+  county                    String?
+
+  listPrice                 Float
+  originalListPrice         Float?
+  sqft                      Int?
+  bedrooms                  Int
+  bathrooms                  Float
+  yearBuilt                 Int?
+  propertyType             String   @default("SFR")
+  status                    String   @default("Active")
+  isActive                  Boolean  @default(true)
+
+  dom                       Int?     // Days on Market
+  domAtSale                 Int?     // DOM when sold (for comps)
+  remarks                   String?
+  hoaMonthly                Float?
+  waterSource               String?  @default("Municipal")
+  sewerType                 String?
+
+  // Price reduction tracking
+  priceReductionCount       Int      @default(0)
+  priceReductionHistory    String?    // [{date, oldPrice, newPrice}] - JSON as text
+  totalDropPct              Float?
+
+  // Scoring fields
+  opportunityScore          Int?
+  zipAbsorptionScore        Int?
+  zipMedianDOM              Float?
+  zipSalesCount90d          Int?
+  zipDataConfidence         String?
+
+  renoScopeScore            Int?
+  renoRiskLevel             String?  // LOW | MEDIUM | HIGH
+  renoRiskFlags             String?  // JSON array as text
+
+  buyerPoolScore            Int?
+  buyerPoolLabel            String?
+
+  modelARV                  Float?
+  renovatedCompsUsed        Int?
+  modelARVConfidenceLevel   String?  // HIGH-RENOVATED | MEDIUM-BLENDED | MEDIUM-GENERAL | LOW
+  modelARVConfidenceDetail  String?
+
+  competitiveInventoryCount Int?
+  competitiveInventoryScore Int?
+
+  flipVelocityScore         Int?     // PRIMARY RANKING METRIC
+  flipVelocityBreakdown     String?    // {opportunity, zipAbsorption, renoScope, buyerPool} - JSON as text
+  flipVelocityLevel         String?  // "High Velocity" (70-100) | "Evaluate" (40-69) | "Track Only" (0-39)
+
+  // Watch list
+  isWatchlist               Boolean  @default(false)
+  watchlistNotes            String?
+
+  // Metadata
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+  lastScoredAt              DateTime?
+  firstSeenDate             DateTime @default(now())
+
+  // Relations
+  priceAlerts               PriceAlert[]
+  domAlerts                 DOMAlert[]
+  scoreHistory              PropertyScoreHistory[] @relation("scoreHistory")
+
+  @@index([market])
+  @@index([zipCode])
+  @@index([status])
+  @@index([isActive])
+  @@index([flipVelocityScore])
+  @@index([createdAt])
+}
+
+model Comp {
+  id                String   @id @default(cuid())
+  marketSource      String   // "MLXchange", "Flex-Washington", "Flex-Iron"
+  mlsNumber         String
+  address           String
+  city              String
+  zipCode           String
+  county            String
+
+  listPrice         Float
+  soldPrice         Float
+  sqft              Int
+  yearBuilt         Int?
+  bedrooms          Int
+  bathrooms          Float
+  dom               Int?
+  domAtSale         Int
+  soldDate          DateTime
+  remarks           String?
+
+  // Comp quality scoring
+  renovatedKeywords String?   // comma-separated list of matched keywords
+  isRenovated       Boolean   @default(false)
+  recencyDays       Int?
+  distanceMiles     Float?    // if lat/lng available
+
+  createdAt         DateTime @default(now())
+
+  @@index([zipCode])
+  @@index([soldDate])
+  @@index([marketSource])
+}
+
+model ZipBenchmark {
+  id                  String   @id @default(cuid())
+  zipCode             String
+  city                String
+  county              String
+  market              String
+
+  recordDate          DateTime @default(now())
+
+  // Active listings
+  activeSFRCount      Int?
+  avgPSFActive        Float?
+  avgDOMActive        Float?
+  priceReductionRate  Float?
+
+  // Sold in last 90 days
+  soldSFRCount90d     Int?
+  medianDOMSold90d    Float?
+  avgPSFSold90d       Float?
+  salesVelocityPerMo  Float?
+  dataConfidence      String?  // HIGH (>=10 sold) | MEDIUM (>=5) | LOW (<5)
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([zipCode, recordDate])
+  @@index([zipCode])
+  @@index([city])
+  @@index([market])
+}
+
+model PriceAlert {
+  id                String   @id @default(cuid())
+  listing           Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId         String
+
+  previousPrice     Float
+  newPrice          Float
+  dropPct           Float
+  alertType         String   // "STANDARD_DROP" | "LARGE_DROP_5_PLUS" | "MILESTONE"
+
+  sentAt            DateTime @default(now())
+  acknowledgedAt    DateTime?
+
+  @@index([listingId])
+  @@index([sentAt])
+}
+
+model DOMAlert {
+  id                String   @id @default(cuid())
+  listing           Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId         String
+
+  domMilestone      Int      // 30, 60, 90, 120, 180
+  alertType         String   // "DOM_MILESTONE" | "FAILED_CONTRACT_REACTIVATED"
+
+  sentAt            DateTime @default(now())
+  acknowledgedAt    DateTime?
+
+  @@index([listingId])
+  @@index([domMilestone])
+  @@index([sentAt])
+}
+
+model RunLog {
+  id                String   @id @default(cuid())
+  runType           String   // "TIER_1_NEW", "TIER_2_DELTA", "TIER_3_WATCHLIST", "WEEKLY_REFRESH"
+  market            String?  // null if cross-market
+
+  newListingsCount  Int      @default(0)
+  updatedListingsCount Int   @default(0)
+  errorCount        Int      @default(0)
+  warnings          String?  // JSON array as text
+
+  connectorStatus   String?    // {mlxchange, flexWashington, flexIron} with status/error - JSON as text
+
+  startedAt         DateTime @default(now())
+  completedAt       DateTime?
+  durationMs        Int?
+
+  @@index([runType])
+  @@index([startedAt])
+}
+
+model PropertyScoreHistory {
+  id                String   @id @default(cuid())
+  listing           Listing  @relation("scoreHistory", fields: [listingId], references: [id], onDelete: Cascade)
+  listingId         String
+
+  recordDate        DateTime // The date this score was recorded
+  flipVelocityScore Int
+  opportunityScore  Int?
+  zipAbsorptionScore Int?
+  renoScopeScore    Int?
+  buyerPoolScore    Int?
+  modelARV          Float?
+  
+  // CORE TRACKING METRICS
+  dom               Int?                    // Days on market TODAY
+  domDelta          Int?                    // Change from yesterday
+  domTrend          String?                 // "INCREASING" | "STABLE" | "DECREASING"
+  
+  listPrice         Float?                  // List price TODAY
+  priceDropPct      Float?                  // % change from yesterday (negative = drop)
+  priceDropVelocity Float?                  // Average daily drop rate over last 7 days
+  daysSinceLastPriceDrop Int?               // How many days since price reduced?
+  isPriceDroppingAccelerated Boolean?       // Is velocity increasing?
+  
+  renoScopeScoreDelta Int?                  // Change in condition score from yesterday
+  conditionRiskFlagCount Int?               // Total number of risk flags present
+  newConditionFlags String?                 // JSON array of newly detected risk flags
+  conditionTrend    String?                 // "DETERIORATING" | "STABLE" | "IMPROVING"
+  
+  status            String?                 // Status at time of scoring
+  remarksHash       String?                 // Hash of remarks to detect changes
+
+  scoreDelta        Int?                    // Change from previous day (score today - score yesterday)
+  trend             String?                 // "UP" | "DOWN" | "STABLE"
+  isNewToList       Boolean @default(false) // First time this property appeared on list
+  appearanceCount   Int?                    // How many days in a row has this property been scored 70+?
+  
+  createdAt         DateTime @default(now())
+
+  @@unique([listingId, recordDate])
+  @@index([listingId])
+  @@index([recordDate])
+  @@index([flipVelocityScore])
+  @@index([trend])
+  @@index([domTrend])
+  @@index([priceDropVelocity])
+}
+
+model DailyMarketReport {
+  id                String   @id @default(cuid())
+  market            String   // "Las Vegas" | "St. George" | "Cedar City"
+  reportDate        DateTime // The date this report is for
+
+  highVelocityCount Int      // Properties 70+
+  evaluateCount     Int      // Properties 40-69
+  trackOnlyCount    Int      // Properties 0-39
+
+  priceDropAlertCount Int
+  domMilestoneCount   Int
+
+  topMomentumProperties String?  // JSON array of top 3-5 properties with best score deltas
+  newEntrants           String?  // JSON array of properties new to 70+ this period
+  persistentHighPerformers String? // JSON array of properties scoring 70+ for 3+ days with improving scores
+
+  htmlReport        String?  // Full HTML report content
+  textReport        String?  // Full text report content
+  
+  connectorStatus   String?  // Status of each connector
+
+  generatedAt       DateTime @default(now())
+
+  @@unique([market, reportDate])
+  @@index([market])
+  @@index([reportDate])
+}
+
+model AnalysisResult {
+  id                String   @id @default(cuid())
+  listingMlsNumber  String
+
+  opportunityScoreBreakdown    String?  // JSON as text
+  zipAbsorptionDetail          String?  // JSON as text
+  renoScopeDetail              String?  // JSON as text
+  buyerPoolDetail              String?  // JSON as text
+  competitiveInventoryDetail   String?  // JSON as text
+
+  compsUsed         String?    // array of comp MLSes used for ARV - JSON as text
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([listingMlsNumber])
+}
