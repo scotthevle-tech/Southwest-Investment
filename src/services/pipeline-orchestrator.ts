@@ -17,6 +17,7 @@ import { BuyerPoolScorerService } from '../analyzer/buyer-pool-scorer';
 import { ARVEstimatorService } from '../analyzer/arv-estimator';
 import { FlipVelocityScorerService } from '../analyzer/flip-velocity-scorer';
 import { CompetitiveInventoryScorerService } from '../analyzer/competitive-inventory-scorer';
+import { DEAL_ANALYSIS } from '../config/markets';
 import { PriceAlertService } from './price-alert';
 import { DOMAlertService } from './dom-alert';
 import { ScoreHistoryTrackerService } from './score-history-tracker';
@@ -168,6 +169,22 @@ export class PipelineOrchestratorService {
             buyerPoolResult.buyerPoolScore,
           );
 
+          // Deal analysis: rehab estimate, max offer, potential profit
+          let estimatedRehab: number | null = null;
+          let maxOffer: number | null = null;
+          let potentialProfit: number | null = null;
+          let spreadToARVPct: number | null = null;
+
+          if (arvResult.modelARV > 0 && listing.sqft) {
+            const costPerSqft = DEAL_ANALYSIS.REHAB_COST_PER_SQFT[renoResult.renoRiskLevel] || DEAL_ANALYSIS.REHAB_COST_PER_SQFT.MEDIUM;
+            estimatedRehab = Math.round(costPerSqft * listing.sqft);
+            maxOffer = Math.round(arvResult.modelARV * DEAL_ANALYSIS.OFFER_RULE_PCT - estimatedRehab);
+            const closingCosts = arvResult.modelARV * (DEAL_ANALYSIS.CLOSING_COST_BUY_PCT + DEAL_ANALYSIS.CLOSING_COST_SELL_PCT);
+            const holdingCosts = DEAL_ANALYSIS.HOLDING_COST_MONTHLY * DEAL_ANALYSIS.HOLDING_MONTHS;
+            potentialProfit = Math.round(arvResult.modelARV - listing.listPrice - estimatedRehab - closingCosts - holdingCosts);
+            spreadToARVPct = Math.round(((arvResult.modelARV - listing.listPrice) / listing.listPrice) * 100 * 10) / 10;
+          }
+
           // Build scoring object
           const scoredListing = {
             ...listing,
@@ -188,6 +205,10 @@ export class PipelineOrchestratorService {
             modelARVConfidenceDetail: arvResult.confidenceLevel,
             competitiveInventoryCount: competitiveResult.competitiveInventoryCount,
             competitiveInventoryScore: competitiveResult.competitiveInventoryScore,
+            estimatedRehab,
+            maxOffer,
+            potentialProfit,
+            spreadToARVPct,
             flipVelocityScore: flipVelocityResult.flipVelocityScore,
             flipVelocityLevel: flipVelocityResult.flipVelocityLevel,
             lastScoredAt: new Date(),

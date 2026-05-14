@@ -63,6 +63,12 @@ model Listing {
   competitiveInventoryCount Int?
   competitiveInventoryScore Int?
 
+  // Deal analysis
+  estimatedRehab            Float?   // Estimated rehab cost based on reno risk × sqft
+  maxOffer                  Float?   // 70% rule: ARV × 0.70 - rehab
+  potentialProfit           Float?   // ARV - listPrice - rehab - closing/holding costs
+  spreadToARVPct            Float?   // (ARV - listPrice) / listPrice as percentage
+
   flipVelocityScore         Int?     // PRIMARY RANKING METRIC
   flipVelocityBreakdown     String?    // {opportunity, zipAbsorption, renoScope, buyerPool} - JSON as text
   flipVelocityLevel         String?  // "High Velocity" (70-100) | "Evaluate" (40-69) | "Track Only" (0-39)

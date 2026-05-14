@@ -34,10 +34,17 @@ export interface Listing {
   opportunityScore?: number;
   zipAbsorptionScore?: number;
   renoScopeScore?: number;
+  renoRiskLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
   buyerPoolScore?: number;
   modelARV?: number;
   flipVelocityScore?: number;
   flipVelocityLevel?: 'High Velocity' | 'Evaluate' | 'Track Only';
+
+  // Deal analysis
+  estimatedRehab?: number;
+  maxOffer?: number;
+  potentialProfit?: number;
+  spreadToARVPct?: number;
 
   // Metadata
   createdAt: Date;

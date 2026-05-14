@@ -28,6 +28,10 @@ export interface PropertyRow {
   flipVelocityLevel: string;
   arv: string;
   listPrice: string;
+  maxOffer: string;
+  estimatedRehab: string;
+  potentialProfit: string;
+  spreadPct: string;
   renoScope: string;
 }
 
@@ -470,9 +474,12 @@ export class EmailTemplateService {
                             <th>Address</th>
                             <th>Market</th>
                             <th>Score</th>
-                            <th>ARV</th>
                             <th>List Price</th>
-                            <th>Reno Risk</th>
+                            <th>ARV</th>
+                            <th>Max Offer</th>
+                            <th>Est. Rehab</th>
+                            <th>Profit</th>
+                            <th>Spread</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -482,9 +489,12 @@ export class EmailTemplateService {
                             <td><strong>${prop.address}</strong></td>
                             <td>${prop.market}</td>
                             <td><span class="score-badge score-high">${prop.flipVelocityScore}</span></td>
-                            <td>${prop.arv}</td>
                             <td>${prop.listPrice}</td>
-                            <td><span class="score-badge score-high">${prop.renoScope}</span></td>
+                            <td>${prop.arv}</td>
+                            <td style="font-weight: bold;">${prop.maxOffer}</td>
+                            <td>${prop.estimatedRehab}</td>
+                            <td style="color: ${prop.potentialProfit.startsWith('-') ? '#ef4444' : '#10b981'}; font-weight: bold;">${prop.potentialProfit}</td>
+                            <td>${prop.spreadPct}</td>
                         </tr>
                         `).join('')}
                     </tbody>
@@ -508,9 +518,12 @@ export class EmailTemplateService {
                             <th>Address</th>
                             <th>Market</th>
                             <th>Score</th>
-                            <th>ARV</th>
                             <th>List Price</th>
-                            <th>Reno Risk</th>
+                            <th>ARV</th>
+                            <th>Max Offer</th>
+                            <th>Est. Rehab</th>
+                            <th>Profit</th>
+                            <th>Spread</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -520,9 +533,12 @@ export class EmailTemplateService {
                             <td><strong>${prop.address}</strong></td>
                             <td>${prop.market}</td>
                             <td><span class="score-badge score-evaluate">${prop.flipVelocityScore}</span></td>
-                            <td>${prop.arv}</td>
                             <td>${prop.listPrice}</td>
-                            <td><span class="score-badge score-evaluate">${prop.renoScope}</span></td>
+                            <td>${prop.arv}</td>
+                            <td style="font-weight: bold;">${prop.maxOffer}</td>
+                            <td>${prop.estimatedRehab}</td>
+                            <td style="color: ${prop.potentialProfit.startsWith('-') ? '#ef4444' : '#10b981'}; font-weight: bold;">${prop.potentialProfit}</td>
+                            <td>${prop.spreadPct}</td>
                         </tr>
                         `).join('')}
                     </tbody>
@@ -635,9 +651,12 @@ export class EmailTemplateService {
         lines.push(`    MLS #:        ${prop.mlsNumber}`);
         lines.push(`    Market:       ${prop.market}`);
         lines.push(`    Score:        ${prop.flipVelocityScore} (${prop.flipVelocityLevel})`);
-        lines.push(`    ARV:          ${prop.arv}`);
         lines.push(`    List Price:   ${prop.listPrice}`);
-        lines.push(`    Reno Risk:    ${prop.renoScope}`);
+        lines.push(`    ARV:          ${prop.arv}`);
+        lines.push(`    Max Offer:    ${prop.maxOffer}`);
+        lines.push(`    Est. Rehab:   ${prop.estimatedRehab}`);
+        lines.push(`    Profit:       ${prop.potentialProfit}`);
+        lines.push(`    Spread:       ${prop.spreadPct}`);
         lines.push('');
       });
     }
@@ -651,9 +670,12 @@ export class EmailTemplateService {
         lines.push(`    MLS #:        ${prop.mlsNumber}`);
         lines.push(`    Market:       ${prop.market}`);
         lines.push(`    Score:        ${prop.flipVelocityScore} (${prop.flipVelocityLevel})`);
-        lines.push(`    ARV:          ${prop.arv}`);
         lines.push(`    List Price:   ${prop.listPrice}`);
-        lines.push(`    Reno Risk:    ${prop.renoScope}`);
+        lines.push(`    ARV:          ${prop.arv}`);
+        lines.push(`    Max Offer:    ${prop.maxOffer}`);
+        lines.push(`    Est. Rehab:   ${prop.estimatedRehab}`);
+        lines.push(`    Profit:       ${prop.potentialProfit}`);
+        lines.push(`    Spread:       ${prop.spreadPct}`);
         lines.push('');
       });
     }

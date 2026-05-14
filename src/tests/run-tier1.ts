@@ -98,6 +98,8 @@ async function runTier1() {
     console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | Year ${l.yearBuilt || '?'}`);
     console.log(`    Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Reno: ${l.renoScopeScore} (${l.renoRiskLevel}) | Buyer: ${l.buyerPoolScore}`);
     if (l.modelARV) console.log(`    ARV: $${l.modelARV.toLocaleString()} (${l.modelARVConfidenceDetail})`);
+    if (l.maxOffer) console.log(`    List: $${l.listPrice.toLocaleString()} | ARV: $${(l.modelARV || 0).toLocaleString()} | Max Offer: $${l.maxOffer.toLocaleString()} | Est Rehab: $${(l.estimatedRehab || 0).toLocaleString()}`);
+    if (l.potentialProfit !== null) console.log(`    Potential Profit: $${(l.potentialProfit || 0).toLocaleString()} | Spread: ${l.spreadToARVPct || 0}%`);
     if (l.remarks) console.log(`    "${l.remarks.substring(0, 150)}..."`);
     console.log();
   }
@@ -105,7 +107,7 @@ async function runTier1() {
   console.log(`EVALUATE (40-69): Top ${Math.min(evaluate.length, 15)} of ${evaluate.length}\n`);
   for (const l of evaluate.slice(0, 15)) {
     console.log(`  SCORE ${l.flipVelocityScore} | MLS# ${l.mlsNumber} | ${l.address}, ${l.city} ${l.zipCode} | $${l.listPrice.toLocaleString()}`);
-    console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | Opp: ${l.opportunityScore} | ZIP: ${l.zipAbsorptionScore} | Reno: ${l.renoScopeScore} | Buyer: ${l.buyerPoolScore} | ARV: $${l.modelARV?.toLocaleString() || '0'}`);
+    console.log(`    ${l.bedrooms}bd/${l.bathrooms}ba | ${l.sqft || '?'} sqft | DOM ${l.dom} | ARV: $${l.modelARV?.toLocaleString() || '0'} | Max Offer: $${l.maxOffer?.toLocaleString() || 'N/A'} | Rehab: $${l.estimatedRehab?.toLocaleString() || 'N/A'} | Profit: $${l.potentialProfit?.toLocaleString() || 'N/A'} (${l.spreadToARVPct || 0}% spread)`);
   }
 
   // Summary

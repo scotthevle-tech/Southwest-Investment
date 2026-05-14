@@ -401,7 +401,7 @@ ${'-'.repeat(100)}
     }
 
     let html = '<table><tr>';
-    html += '<th>MLS #</th><th>Address</th><th>Market</th><th>Price</th><th>Flip Velocity</th><th>Trend</th><th>DOM</th><th>ARV</th>';
+    html += '<th>MLS #</th><th>Address</th><th>Market</th><th>List Price</th><th>ARV</th><th>Max Offer</th><th>Profit</th><th>Score</th><th>Trend</th><th>DOM</th>';
     html += '</tr>';
 
     // Create lookup for trends
@@ -431,15 +431,18 @@ ${'-'.repeat(100)}
         if (trend.appearanceCount >= 3) badges += ' <span class="persistent-badge">3+ DAYS</span>';
       }
 
+      const profitColor = (listing.potentialProfit ?? 0) >= 0 ? '#27ae60' : '#e74c3c';
       html += `<tr>`;
       html += `<td style="font-family: monospace; font-size: 13px;">${listing.mlsNumber}</td>`;
       html += `<td>${listing.address}${listing.zipCode ? ` (${listing.zipCode})` : ''}${badges}</td>`;
       html += `<td>${listing.market}</td>`;
       html += `<td>$${listing.listPrice.toLocaleString()}</td>`;
+      html += `<td>$${listing.modelARV?.toLocaleString() || 'TBD'}</td>`;
+      html += `<td style="font-weight:bold;">$${listing.maxOffer?.toLocaleString() || 'N/A'}</td>`;
+      html += `<td style="color:${profitColor}; font-weight:bold;">$${listing.potentialProfit?.toLocaleString() || 'N/A'}</td>`;
       html += `<td class="${scoreClass}">${listing.flipVelocityScore}</td>`;
       html += `<td class="${trendClass}">${trendIcon}</td>`;
       html += `<td>${listing.dom || 'N/A'}</td>`;
-      html += `<td>$${listing.modelARV?.toLocaleString() || 'TBD'}</td>`;
       html += '</tr>';
     }
 
@@ -464,10 +467,13 @@ ${'-'.repeat(100)}
       text += `\n${listing.address} ${badges}\n`;
       text += `  MLS #: ${listing.mlsNumber}\n`;
       text += `  Market: ${listing.market}\n`;
-      text += `  Price: $${listing.listPrice.toLocaleString()}\n`;
+      text += `  List Price: $${listing.listPrice.toLocaleString()}\n`;
+      text += `  ARV: $${listing.modelARV?.toLocaleString() || 'TBD'}\n`;
+      text += `  Max Offer: $${listing.maxOffer?.toLocaleString() || 'N/A'}\n`;
+      text += `  Est. Rehab: $${listing.estimatedRehab?.toLocaleString() || 'N/A'}\n`;
+      text += `  Potential Profit: $${listing.potentialProfit?.toLocaleString() || 'N/A'} (${listing.spreadToARVPct || 0}% spread)\n`;
       text += `  Flip Velocity Score: ${listing.flipVelocityScore} ${trendIcon}\n`;
       text += `  DOM: ${listing.dom || 'N/A'}\n`;
-      text += `  Est. ARV: $${listing.modelARV?.toLocaleString() || 'TBD'}\n`;
 
       if (trend) {
         text += `  Score History: ${trend.sevenDayHistory.join(' → ')}\n`;

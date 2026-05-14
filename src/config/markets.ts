@@ -89,6 +89,19 @@ export const MOTIVATED_SELLER_KEYWORDS = {
   ],
 } as const;
 
+export const DEAL_ANALYSIS = {
+  REHAB_COST_PER_SQFT: {
+    LOW: 15,      // Cosmetic: paint, flooring, fixtures
+    MEDIUM: 30,   // Moderate: kitchen, bath, some systems
+    HIGH: 50,     // Major: structural, full gut, systems
+  },
+  OFFER_RULE_PCT: 0.70,           // 70% rule: max offer = ARV × 0.70 - rehab
+  CLOSING_COST_BUY_PCT: 0.02,     // ~2% buyer closing costs
+  CLOSING_COST_SELL_PCT: 0.06,    // ~6% seller closing (agent commissions + title)
+  HOLDING_COST_MONTHLY: 1500,     // Insurance, taxes, utilities, loan interest
+  HOLDING_MONTHS: 5,              // Average flip timeline
+} as const;
+
 export const FLIP_VELOCITY_WEIGHTS = {
   OPPORTUNITY: 0.4,
   ZIP_ABSORPTION: 0.3,
