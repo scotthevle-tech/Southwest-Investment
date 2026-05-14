@@ -69,6 +69,16 @@ export class ListingNormalizerService {
       }
     }
 
+    // Hard filter: Age-restricted communities (keyword backup)
+    if (rawListing.remarks) {
+      const remarksLower = rawListing.remarks.toLowerCase();
+      const ageRestricted = ['55+', '55 and over', '55 & over', 'age restricted',
+        'age-restricted', 'senior community', 'adult community', 'active adult'].some(kw => remarksLower.includes(kw));
+      if (ageRestricted) {
+        failures.push('Age-restricted community detected in remarks');
+      }
+    }
+
     // Warnings (non-blocking)
     if (!rawListing.sqft) {
       warnings.push('Missing sqft - ARV estimation will be impossible');

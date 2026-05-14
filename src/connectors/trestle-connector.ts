@@ -85,6 +85,7 @@ export class TrestleConnector extends BaseConnector {
         "PropertyType eq 'Residential'",
         "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract')",
         "(PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Single Family Residence' or PropertySubType eq 'Detached')",
+        "SeniorCommunityYN ne true",
         "CountyOrParish eq 'Clark'",
       ].join(' and ');
 
@@ -147,6 +148,7 @@ export class TrestleConnector extends BaseConnector {
         "PropertyType eq 'Residential'",
         "(StandardStatus eq 'Active' or StandardStatus eq 'ActiveUnderContract' or StandardStatus eq 'Pending')",
         "(PropertySubType eq 'SingleFamilyResidence' or PropertySubType eq 'Single Family Residence' or PropertySubType eq 'Detached')",
+        "SeniorCommunityYN ne true",
         "CountyOrParish eq 'Clark'",
       ].join(' and ');
 
