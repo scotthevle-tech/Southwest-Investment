@@ -24,6 +24,8 @@ model Listing {
   sqft                      Int?
   bedrooms                  Int
   bathrooms                  Float
+  garageSpaces              Int?
+  lotSqft                   Int?
   yearBuilt                 Int?
   propertyType             String   @default("SFR")
   status                    String   @default("Active")
@@ -111,6 +113,8 @@ model Comp {
   yearBuilt         Int?
   bedrooms          Int
   bathrooms          Float
+  garageSpaces      Int?
+  lotSqft           Int?
   dom               Int?
   domAtSale         Int
   soldDate          DateTime

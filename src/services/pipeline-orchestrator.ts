@@ -128,11 +128,47 @@ export class PipelineOrchestratorService {
             orderBy: { recordDate: 'desc' },
           });
 
-          const comps = await this.prisma.comp.findMany({
-            where: { zipCode: listing.zipCode, soldDate: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) } },
+          // Like-kind comp matching: same ZIP, similar sqft/beds/baths, prefer matching garage
+          const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+          const sixMonthsAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+          const sqftMin = listing.sqft ? Math.round(listing.sqft * 0.75) : 0;
+          const sqftMax = listing.sqft ? Math.round(listing.sqft * 1.25) : 999999;
+
+          // First try: tight match (same ZIP, ±25% sqft, ±1 bed, ±1 bath, last 90 days)
+          let comps = await this.prisma.comp.findMany({
+            where: {
+              zipCode: listing.zipCode,
+              soldDate: { gte: ninetyDaysAgo },
+              sqft: { gte: sqftMin, lte: sqftMax },
+              bedrooms: { gte: listing.bedrooms - 1, lte: listing.bedrooms + 1 },
+              bathrooms: { gte: listing.bathrooms - 1, lte: listing.bathrooms + 1 },
+            },
             orderBy: { soldDate: 'desc' },
-            take: 10,
+            take: 15,
           });
+
+          // Fallback: widen to 180 days if fewer than 3 tight comps
+          if (comps.length < 3) {
+            comps = await this.prisma.comp.findMany({
+              where: {
+                zipCode: listing.zipCode,
+                soldDate: { gte: sixMonthsAgo },
+                sqft: { gte: sqftMin, lte: sqftMax },
+                bedrooms: { gte: listing.bedrooms - 1, lte: listing.bedrooms + 1 },
+              },
+              orderBy: { soldDate: 'desc' },
+              take: 15,
+            });
+          }
+
+          // Last resort: same ZIP, 180 days, no property filters (original behavior)
+          if (comps.length < 3) {
+            comps = await this.prisma.comp.findMany({
+              where: { zipCode: listing.zipCode, soldDate: { gte: sixMonthsAgo } },
+              orderBy: { soldDate: 'desc' },
+              take: 10,
+            });
+          }
 
           // Score: Opportunity
           const oppResult = await this.opportunityScorer.calculate(

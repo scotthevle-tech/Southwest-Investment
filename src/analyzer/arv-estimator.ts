@@ -20,6 +20,10 @@ interface Comp {
   mlsNumber: string;
   soldPrice: number;
   sqft: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  garageSpaces?: number | null;
+  lotSqft?: number | null;
   soldDate: Date;
   remarks?: string;
   distanceMiles?: number;
@@ -55,6 +59,37 @@ export class ARVEstimatorService {
   private calculateProximityWeight(distanceMiles: number | undefined): number {
     if (!distanceMiles) return 1;
     return 1 + ((1.5 - distanceMiles) / 1.5);
+  }
+
+  /**
+   * Calculate similarity weight: comps closer in size/features get higher weight
+   * Boosts comps with matching garage count and similar lot size
+   */
+  private calculateSimilarityWeight(listing: Listing, comp: Comp): number {
+    let weight = 1.0;
+
+    // Sqft similarity: closer sqft = higher weight (0.5 to 1.5)
+    if (listing.sqft && comp.sqft) {
+      const sqftRatio = Math.min(listing.sqft, comp.sqft) / Math.max(listing.sqft, comp.sqft);
+      weight *= 0.5 + sqftRatio;
+    }
+
+    // Garage match bonus
+    if (listing.garageSpaces !== undefined && comp.garageSpaces !== undefined && comp.garageSpaces !== null) {
+      if (listing.garageSpaces === comp.garageSpaces) {
+        weight *= 1.2;
+      }
+    }
+
+    // Lot size similarity bonus (if both have lot data, within 50% = bonus)
+    if (listing.lotSqft && comp.lotSqft) {
+      const lotRatio = Math.min(listing.lotSqft, comp.lotSqft) / Math.max(listing.lotSqft, comp.lotSqft);
+      if (lotRatio > 0.5) {
+        weight *= 1.0 + (lotRatio - 0.5);
+      }
+    }
+
+    return weight;
   }
 
   /**
@@ -152,7 +187,8 @@ export class ARVEstimatorService {
       const compPSF = comp.soldPrice / comp.sqft;
       const recencyWeight = this.calculateRecencyWeight(comp.soldDate);
       const proximityWeight = this.calculateProximityWeight(comp.distanceMiles);
-      const compWeight = recencyWeight * proximityWeight;
+      const similarityWeight = this.calculateSimilarityWeight(listing, comp);
+      const compWeight = recencyWeight * proximityWeight * similarityWeight;
 
       totalWeight += compWeight;
       totalWeightedPSF += compPSF * compWeight;

@@ -120,6 +120,8 @@ export class ListingNormalizerService {
       sqft: rawListing.sqft,
       bedrooms: rawListing.bedrooms,
       bathrooms: rawListing.bathrooms,
+      garageSpaces: rawListing.garageSpaces,
+      lotSqft: rawListing.lotSqft,
       yearBuilt: rawListing.yearBuilt,
       propertyType: rawListing.propertyType,
       status: rawListing.status,

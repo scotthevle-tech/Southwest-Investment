@@ -15,6 +15,8 @@ export interface Listing {
   sqft?: number;
   bedrooms: number;
   bathrooms: number;
+  garageSpaces?: number;
+  lotSqft?: number;
   yearBuilt?: number;
   propertyType: string;
   status: string;
@@ -154,6 +156,8 @@ export interface ConnectorRawListing {
   sqft?: number;
   bedrooms: number;
   bathrooms: number;
+  garageSpaces?: number;
+  lotSqft?: number;
   yearBuilt?: number;
   status: string;
   dom?: number;

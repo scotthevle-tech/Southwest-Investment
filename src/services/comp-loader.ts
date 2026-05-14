@@ -13,6 +13,7 @@ const COMP_FIELDS = [
   'City', 'PostalCode', 'CountyOrParish',
   'BedroomsTotal', 'BathroomsTotalInteger', 'BathroomsTotalDecimal',
   'BuildingAreaTotal', 'AboveGradeFinishedArea', 'YearBuilt',
+  'GarageSpaces', 'LotSizeSquareFeet',
   'PropertyType', 'PropertySubType',
   'PublicRemarks',
 ].join(',');
@@ -103,12 +104,17 @@ export class CompLoaderService {
         const closeDate = new Date(raw.CloseDate);
         const recencyDays = Math.floor((Date.now() - closeDate.getTime()) / (24 * 60 * 60 * 1000));
 
+        const garageSpaces = Number(raw.GarageSpaces) || null;
+        const lotSqft = Number(raw.LotSizeSquareFeet) || null;
+
         await this.prisma.comp.upsert({
           where: { id: `${config.marketSource}-${mlsNumber}` },
           update: {
             soldPrice: Number(raw.ClosePrice),
             listPrice: Number(raw.ListPrice) || 0,
             sqft,
+            garageSpaces,
+            lotSqft,
             domAtSale: Number(raw.DaysOnMarket) || 0,
             soldDate: closeDate,
             remarks: raw.PublicRemarks ? String(raw.PublicRemarks).substring(0, 2000) : null,
@@ -130,6 +136,8 @@ export class CompLoaderService {
             yearBuilt: Number(raw.YearBuilt) || null,
             bedrooms: Number(raw.BedroomsTotal) || 0,
             bathrooms: Number(raw.BathroomsTotalInteger) || Number(raw.BathroomsTotalDecimal) || 0,
+            garageSpaces,
+            lotSqft,
             dom: Number(raw.DaysOnMarket) || null,
             domAtSale: Number(raw.DaysOnMarket) || 0,
             soldDate: closeDate,
